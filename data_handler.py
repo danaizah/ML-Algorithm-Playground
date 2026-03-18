@@ -2,6 +2,11 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 # Constants 
+<<<<<<< HEAD
+=======
+MIN_ROWS = 20
+MIN_COLS = 2
+>>>>>>> bdf99bef268a699804caf942b8e8df517e79e811
 TEST_SIZE = 0.2
 RANDOM_STATE = 42
 

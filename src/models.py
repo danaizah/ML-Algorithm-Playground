@@ -18,7 +18,7 @@ MODELS: dict[str, type] = {
 HYPERPARAMS: dict[str, list[dict]] = {
     "Logistic Regression": [
         {"name": "C", "type": "float", "min": 0.01, "max": 10.0, "default": 1.0, "step": 0.01},
-        {"name": "max_iter", "type": "int", "min": 100, "max": 1000, "default": 200, "step": 50},
+        {"name": "max_iter", "type": "int", "min": 100, "max": 1000, "default": 100, "step": 50},
     ],
     "Decision Tree": [
         {"name": "max_depth", "type": "int", "min": 1, "max": 20, "default": 5, "step": 1},

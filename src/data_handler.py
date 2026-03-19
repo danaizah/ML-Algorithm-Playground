@@ -1,9 +1,16 @@
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.datasets import load_iris
 
 # Constants 
 TEST_SIZE = 0.2
 RANDOM_STATE = 42
+
+def get_sample_dataset():
+    iris = load_iris(as_frame=True)
+    df = iris.frame  # includes all features + target column
+    df["target"] = df["target"].map({0: "setosa", 1: "versicolor", 2: "virginica"})
+    return df
 
 
 def load_csv(file) -> pd.DataFrame:

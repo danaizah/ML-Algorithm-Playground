@@ -18,14 +18,14 @@ st.markdown("Upload a classification dataset, pick an algorithm, tune it, and ex
 
 st.header("1. Load Data")
 
-uploaded_file = st.file_uploader("Upload a CSV file", type=["csv"])
+uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx", "xls"])
 
 if uploaded_file is None:
     st.info("No file uploaded yet. Using the built-in sample dataset.")
     df = data_handler.get_sample_dataset()
 else:
     try:
-        df = data_handler.load_csv(uploaded_file)
+        df = data_handler.load_file(uploaded_file)
         st.success(f"Loaded: {df.shape[0]} rows × {df.shape[1]} columns")
     except ValueError as e:
         st.error(str(e))

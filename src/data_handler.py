@@ -6,6 +6,12 @@ from sklearn.datasets import load_iris
 TEST_SIZE = 0.2
 RANDOM_STATE = 42
 
+SUPPORTED_EXTENSIONS = {
+    ".csv": "csv",
+    ".xlsx": "excel",
+    ".xls": "excel",
+}
+
 def get_sample_dataset():
     iris = load_iris(as_frame=True)
     df = iris.frame  # includes all features + target column
@@ -13,14 +19,23 @@ def get_sample_dataset():
     return df
 
 
-def load_csv(file) -> pd.DataFrame:
+def load_file(file) -> pd.DataFrame:
+
+    extension = _get_extension(file.name)
+
+    if extension not in SUPPORTED_EXTENSIONS:
+        raise ValueError(
+            f"Unsupported file type: '{extension}'. "
+            f"Supported types: {list(SUPPORTED_EXTENSIONS.keys())}"
+        )
     
     try:
-        df = pd.read_csv(file)
+        if SUPPORTED_EXTENSIONS[extension] == "csv":
+            return pd.read_csv(file)
+        else:
+            return pd.read_excel(file)
     except Exception as exc:
-        raise ValueError(f"Could not read CSV file: {exc}") from exc
-
-    return df
+        raise ValueError(f"Could not read file: {exc}") from exc
 
 
 def get_column_names(df: pd.DataFrame) -> list[str]:
@@ -44,3 +59,8 @@ def data_split(
     return train_test_split(X, y, test_size=test_size, random_state=random_state)
 
 
+# --- Private helpers ---
+
+def _get_extension(filename: str) -> str:
+    """Extract the lowercase file extension from a filename."""
+    return "." + filename.rsplit(".", 1)[-1].lower()

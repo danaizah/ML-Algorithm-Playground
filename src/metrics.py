@@ -1,8 +1,16 @@
+"""
+Model evaluation utilities for classification tasks.
+
+Provides metric computation and plotting functions for confusion matrices,
+feature importances, and ROC curves.
+"""
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.base import BaseEstimator
+from sklearn.metrics import ConfusionMatrixDisplay
 from sklearn.metrics import (
     accuracy_score,
     f1_score,
@@ -14,36 +22,77 @@ from sklearn.metrics import (
 from sklearn.preprocessing import LabelBinarizer
 
 
-def compute_summary(y_test: pd.Series, y_pred: np.ndarray) -> dict:
+def compute_summary(
+        y_test: pd.Series, 
+        y_pred: np.ndarray, 
+        class_names: list[str]
+        ) -> dict:
+    """Compute classification accuracy, weighted F1, and a full classification report.
+
+    Args:
+        y_test: True target labels.
+        y_pred: Predicted labels from the model.
+
+    Returns:
+        A dictionary with keys 'accuracy', 'f1_weighted', and
+        'classification_report'.
+    """
     
     return {
         "accuracy": accuracy_score(y_test, y_pred),
         "f1_weighted": f1_score(y_test, y_pred, average="weighted", zero_division=0),
-        "classification_report": classification_report(y_test, y_pred, zero_division=0),
+        "classification_report": classification_report(
+            y_test, 
+            y_pred, 
+            zero_division=0, 
+            target_names=class_names, 
+            output_dict=True
+        ),
     }
 
+def plot_confusion_matrix(
+    y_test: pd.Series,
+    y_pred: np.ndarray,
+    class_names: list[str],
+) -> plt.Figure:
+    """Plot the confusion matrix.
 
-def plot_confusion_matrix(y_test: pd.Series, y_pred: np.ndarray, class_names: list[str]) -> plt.Figure:
+    Args:
+        y_test: True target labels.
+        y_pred: Predicted labels from the model.
+        class_names: Ordered list of class name strings.
+
+    Returns:
+        A matplotlib Figure containing the confusion matrix.
+    """
     
-    cm = confusion_matrix(y_test, y_pred)
     fig, ax = plt.subplots(figsize=(6, 5))
-    sns.heatmap(
-        cm,
-        annot=True,
-        fmt="d",
+    ConfusionMatrixDisplay.from_predictions(
+        y_test,
+        y_pred,
+        display_labels=class_names,
         cmap="Blues",
-        xticklabels=class_names,
-        yticklabels=class_names,
         ax=ax,
     )
-    ax.set_xlabel("Predicted")
-    ax.set_ylabel("Actual")
     ax.set_title("Confusion Matrix")
     fig.tight_layout()
     return fig
 
 
-def plot_feature_importance(importance_df: pd.DataFrame, top_n: int = 10) -> plt.Figure:
+def plot_feature_importance(
+    importance_df: pd.DataFrame,
+    top_n: int = 10,
+) -> plt.Figure:
+    """Plot a horizontal bar chart of the top N feature importances.
+
+    Args:
+        importance_df: A DataFrame with 'feature' and 'importance' columns,
+                       sorted by importance descending.
+        top_n: Number of top features to display.
+
+    Returns:
+        A matplotlib Figure containing the bar chart.
+    """
     
     df = importance_df.head(top_n)
     fig, ax = plt.subplots(figsize=(7, 4))
@@ -61,6 +110,21 @@ def plot_roc_curve(
     y_test: pd.Series,
     class_names: list[str],
 ) -> plt.Figure | None:
+    """Plot the ROC curve for binary or multiclass classifiers.
+
+    For binary classification a single curve is drawn. For multiclass,
+    one curve is drawn per class using a one-vs-rest strategy.
+
+    Args:
+        model: A fitted sklearn estimator with a predict_proba method.
+        X_test: Feature matrix for the test set.
+        y_test: True target labels.
+        class_names: Ordered list of class name strings.
+
+    Returns:
+        A matplotlib Figure, or None if the model does not support
+        probability estimates.
+    """
     
     if not hasattr(model, "predict_proba"):
         return None

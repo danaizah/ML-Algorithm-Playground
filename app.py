@@ -1,3 +1,8 @@
+"""
+Streamlit entry point for the ML Algorithm Playground.
+
+"""
+import numpy as np
 import streamlit as st
 import pandas as pd
 
@@ -89,8 +94,11 @@ if st.button("Train Model", type="primary"):
         X_train, X_test, y_train, y_test = data_handler.data_split(df_clean, target_col)
         y_train_enc, label_enc = preprocessing.encode_target(y_train)
         y_test_enc = pd.Series(label_enc.transform(y_test), name=y_test.name)
-    
 
+        # Only keep classes actually present in the test set for the results display
+        present_classes = np.unique(y_test_enc)
+        class_names = label_enc.inverse_transform(present_classes).astype(str).tolist()
+    
         feature_pipeline = preprocessing.build_feature_pipeline(X_train)
         X_train_proc = feature_pipeline.fit_transform(X_train)
         X_test_proc = feature_pipeline.transform(X_test)
@@ -100,20 +108,18 @@ if st.button("Train Model", type="primary"):
         y_pred = model.predict(X_test_proc)
 
         # --- Metrics ---
-        summary = metrics.compute_summary(y_test_enc, y_pred)
-        class_names = label_enc.classes_.astype(str).tolist()
+        summary = metrics.compute_summary(y_test_enc, y_pred, class_names)
+        
 
     
     # Section 4 — Results
     
     st.header("4. Results")
 
-    # Score cards
     m1, m2 = st.columns(2)
     m1.metric("Accuracy", f"{summary['accuracy']:.2%}")
     m2.metric("F1 Score (weighted)", f"{summary['f1_weighted']:.2%}")
 
-    # Plots
     plot_col1, plot_col2 = st.columns(2)
 
     with plot_col1:
@@ -129,7 +135,6 @@ if st.button("Train Model", type="primary"):
         else:
             st.info(f"{model_name} does not support probability estimates — ROC curve unavailable.")
 
-    # Feature importances
     feature_names = (
         X_train.select_dtypes(include=["number"]).columns.tolist()
         + X_train.select_dtypes(include=["object", "category"]).columns.tolist()
@@ -140,8 +145,18 @@ if st.button("Train Model", type="primary"):
         fig_imp = metrics.plot_feature_importance(importance_df)
         st.pyplot(fig_imp)
 
-    # Full classification report
     with st.expander("Full classification report"):
-        st.text(summary["classification_report"])
+        report = summary["classification_report"].copy()
+
+        accuracy = report.pop("accuracy")  # remove scalar
+
+        report_df = (
+            pd.DataFrame(report)
+            .transpose()
+            .round(2)
+        )
+
+        st.dataframe(report_df, use_container_width=True)
+        
 
 

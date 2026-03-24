@@ -22,7 +22,11 @@ from sklearn.metrics import (
 from sklearn.preprocessing import LabelBinarizer
 
 
-def compute_summary(y_test: pd.Series, y_pred: np.ndarray) -> dict:
+def compute_summary(
+        y_test: pd.Series, 
+        y_pred: np.ndarray, 
+        class_names: list[str]
+        ) -> dict:
     """Compute classification accuracy, weighted F1, and a full classification report.
 
     Args:
@@ -37,7 +41,13 @@ def compute_summary(y_test: pd.Series, y_pred: np.ndarray) -> dict:
     return {
         "accuracy": accuracy_score(y_test, y_pred),
         "f1_weighted": f1_score(y_test, y_pred, average="weighted", zero_division=0),
-        "classification_report": classification_report(y_test, y_pred, zero_division=0, output_dict=True),
+        "classification_report": classification_report(
+            y_test, 
+            y_pred, 
+            zero_division=0, 
+            target_names=class_names, 
+            output_dict=True
+        ),
     }
 
 def plot_confusion_matrix(

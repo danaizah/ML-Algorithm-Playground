@@ -108,7 +108,7 @@ if st.button("Train Model", type="primary"):
         y_pred = model.predict(X_test_proc)
 
         # --- Metrics ---
-        summary = metrics.compute_summary(y_test_enc, y_pred)
+        summary = metrics.compute_summary(y_test_enc, y_pred, class_names)
         
 
     

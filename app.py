@@ -142,6 +142,17 @@ if st.button("Train Model", type="primary"):
         st.pyplot(fig_imp)
 
     with st.expander("Full classification report"):
-        st.text(summary["classification_report"])
+        report = summary["classification_report"].copy()
+
+        accuracy = report.pop("accuracy")  # remove scalar
+
+        report_df = (
+            pd.DataFrame(report)
+            .transpose()
+            .round(2)
+        )
+
+        st.dataframe(report_df, use_container_width=True)
+        
 
 

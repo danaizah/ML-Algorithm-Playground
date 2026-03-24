@@ -37,7 +37,7 @@ def compute_summary(y_test: pd.Series, y_pred: np.ndarray) -> dict:
     return {
         "accuracy": accuracy_score(y_test, y_pred),
         "f1_weighted": f1_score(y_test, y_pred, average="weighted", zero_division=0),
-        "classification_report": classification_report(y_test, y_pred, zero_division=0),
+        "classification_report": classification_report(y_test, y_pred, zero_division=0, output_dict=True),
     }
 
 def plot_confusion_matrix(
